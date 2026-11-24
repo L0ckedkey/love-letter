@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    image: love-letter:latest
+    container_name: love-letter
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      GAME_TTL_HOURS: ${GAME_TTL_HOURS:-48}
+    volumes:
+      - ll-data:/data
+
+  # Opsional: link publik gratis lewat Cloudflare Quick Tunnel.
+  #   docker compose --profile tunnel up -d
+  #   docker compose logs tunnel | grep trycloudflare
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://app:8080
+    depends_on:
+      - app
+
+volumes:
+  ll-data:
